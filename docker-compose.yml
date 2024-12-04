@@ -1,0 +1,54 @@
+version: '3'
+services:
+  server:
+    build: ./server
+    restart: always
+    depends_on:
+      - rabbitmq
+    networks:
+      - ollama_network
+      - proxy_network
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ollama_network
+    restart: always
+  ollama:
+    build: ./worker
+    volumes:
+      - ./worker:/app
+    environment:
+      LOG_LEVEL: debug
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "test -s `which nvidia-smi` && nvidia-smi || exit 1"]
+      start_period: 1s
+      interval: 20s
+      timeout: 5s
+      retries: 2
+    restart: always
+    depends_on:
+      - rabbitmq
+    networks:
+      - ollama_network
+volumes:
+  rabbitmq_data:
+networks:
+  ollama_network:
+    name: ollama_network
+    external: true
+  proxy_network:
+    name: proxy_network
+    external: true
