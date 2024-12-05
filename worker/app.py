@@ -30,7 +30,7 @@ def callback(ch, method, properties, body):
     logging.info(f"\n [*] Received:\n {body}\n")
     response = ollama.chat(
         model=model,
-        keep_alive=10,
+        keep_alive=0,
         messages=[
             {
                 "role": "user",
