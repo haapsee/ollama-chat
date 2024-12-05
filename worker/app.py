@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 
 import ollama
 import pika
@@ -8,13 +9,15 @@ import pika
 os.system("ollama pull qwen2.5-coder")
 logging.basicConfig(level=logging.INFO)
 
-def send():
+def send(message='hello'):
     connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
     channel = connection.channel()
     channel.queue_declare(queue='ollama')
-    channel.basic_publish(exchange='',
-                      routing_key='ollama',
-                      body='Hello')
+    channel.basic_publish(
+        exchange='',
+        routing_key='ollama',
+        body=message
+    )
     logging.info("\n [x] Sent 'Hello!'\n")
     connection.close()
 
@@ -48,12 +51,13 @@ def main():
 
 if __name__ == '__main__':
     try:
-        send()
-        send()
-        main()
+        try:
+            send()
+            send()
+            main()
+        except pika.exceptions.AMQPConnectionError as e:
+            logging.error(f"Failed to connect to RabbitMQ: {e}")
+            sys.exit(1)
     except KeyboardInterrupt:
         logging.warning('Interrupted')
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+        sys.exit(0)
