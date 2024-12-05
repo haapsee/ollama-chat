@@ -52,7 +52,7 @@ if __name__ == '__main__':
         send()
         main()
     except KeyboardInterrupt:
-        print('Interrupted')
+        logging.warning('Interrupted')
         try:
             sys.exit(0)
         except SystemExit:
