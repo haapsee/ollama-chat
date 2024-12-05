@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pika = "*"
 ollama = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

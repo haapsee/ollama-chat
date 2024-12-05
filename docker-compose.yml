@@ -25,13 +25,17 @@ services:
       - ./worker:/app
     environment:
       LOG_LEVEL: debug
+    profiles:
+      - automatic
     deploy:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+            - capabilities:
+              - compute
+            # - driver: nvidia
+            #   count: all
+            #   capabilities: [gpu]
     healthcheck:
       test: ["CMD-SHELL", "test -s `which nvidia-smi` && nvidia-smi || exit 1"]
       start_period: 1s
@@ -48,7 +52,6 @@ volumes:
 networks:
   ollama_network:
     name: ollama_network
-    external: true
   proxy_network:
     name: proxy_network
     external: true

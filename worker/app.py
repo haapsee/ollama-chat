@@ -4,8 +4,15 @@ import logging
 import ollama
 import pika
 
+from dotenv import dotenv_values
+from dotenv import load_dotenv
 
-os.system("ollama pull qwen2.5-coder")
+
+load_dotenv()
+
+model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:3b")
+
+os.system(f"ollama pull {model}")
 logging.basicConfig(level=logging.INFO)
 
 def send():
@@ -22,7 +29,8 @@ def send():
 def callback(ch, method, properties, body):
     logging.info(f"\n [*] Received:\n {body}\n")
     response = ollama.chat(
-        model="qwen2.5-coder",
+        model=model,
+        keep_alive=10,
         messages=[
             {
                 "role": "user",
@@ -30,7 +38,7 @@ def callback(ch, method, properties, body):
             },
         ]
     )
-    logging.info(f"\n [*] Response:\n {response['message']['content']} \n")
+    logging.info(f"\n [*] Response:\n {response.message.content} \n")
 
 
 def main():
